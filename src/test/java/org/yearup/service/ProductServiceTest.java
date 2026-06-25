@@ -9,8 +9,10 @@ import org.yearup.models.Product;
 import org.yearup.repository.ProductRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,5 +47,18 @@ class ProductServiceTest
 
         assertEquals(1, result.size());
         assertEquals("T-Shirt", result.get(0).getName());
+    }
+
+    @Test
+    void update_persistsStockChange()
+    {
+        Product existing = new Product(1, "Laptop", 899.99, 1, "desc", "Gray", 30, false, "laptop.jpg");
+        Product update   = new Product(1, "Laptop", 899.99, 1, "desc", "Gray", 99, false, "laptop.jpg");
+        when(productRepository.findById(1)).thenReturn(Optional.of(existing));
+        when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Product result = productService.update(1, update);
+
+        assertEquals(99, result.getStock(), "Stock should be updated to the new value.");
     }
 }
